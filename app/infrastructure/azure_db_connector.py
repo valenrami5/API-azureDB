@@ -2,6 +2,8 @@ import os
 import pypyodbc as odbc
 from fastapi import HTTPException
 from dotenv import load_dotenv
+from app.domain.models.jobs import Jobs
+from typing import List
 
 load_dotenv(".env")
 
@@ -118,6 +120,20 @@ class SqlManager(AzureConnector):
         self.cursor.execute(query)
         self.conn.commit()
         print("..hired employees table created!")
+
+    def _insert_jobs_batch(self, jobs_objects: List[Jobs]):
+        query = """
+            INSERT INTO [dbo].[jobs] ([id], [job])
+            VALUES (?, ?);
+        """
+        try:
+            values = [(job.id, job.job) for job in jobs_objects]
+            self.cursor.executemany(query, values)
+            self.conn.commit()
+            self.cursor.close()
+        except Exception as e:
+            self.conn.rollback()
+            raise e
 
     def close_connection(self):
         return self._close_connection(self.conn)
