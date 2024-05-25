@@ -13,7 +13,7 @@ class AzureConnector(object):
         user = os.getenv('usr')
         pwd = os.getenv('pwd')
         database = os.getenv('database')
-        connection_string = f'Driver={driver};Server={server},1433;Database={database};Uid={user};Pwd={pwd};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=1000;autocommit=true;enable=true'
+        connection_string =f'Driver={driver};Server={server};Database={database};Uid={user};Pwd={pwd};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
         return connection_string
     
     def _establish_connection(self):
