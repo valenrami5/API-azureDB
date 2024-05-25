@@ -37,6 +37,16 @@ class SqlManager(AzureConnector):
     def __init__(self):
         self.conn, self.cursor = self._establish_connection()
 
+    def show_tables(self):
+        query = """SELECT name FROM sys.tables;"""
+        self.cursor.execute(query)
+        tables = self.cursor.fetchall() 
+        if not tables:
+            print('vacio')
+        else:
+            for table in tables:
+                print(table[0])     
+
     def insert_col(self):
         """
     Inserts the integer value 1 into the column named col1 in the Products table in the Azure SQL database.
@@ -51,4 +61,65 @@ class SqlManager(AzureConnector):
         insert_query = "INSERT INTO [dbo].[Products] (col1) VALUES (?)"
         self.cursor.execute(insert_query, (1,))
         print("..Row Updated!")
-        self._close_connection(self.conn)
+        
+    def create_departments_table(self):
+        query = """
+            IF NOT EXISTS (
+        SELECT * FROM sys.tables WHERE name = 'Departments'
+    )
+    BEGIN
+        CREATE TABLE [dbo].[Departments] (
+            [id]         INT  NOT NULL,
+            [department] VARCHAR(255) NOT NULL,
+            CONSTRAINT [PK_Departments] PRIMARY KEY CLUSTERED ([id] ASC),
+        );
+    END
+        """
+        self.cursor.execute(query)
+        self.conn.commit()
+        print("..Departments table created!")
+
+    def create_jobs_table(self):
+        query = """
+            IF NOT EXISTS (
+            SELECT * FROM sys.tables WHERE name = 'jobs'
+        )
+        BEGIN
+            CREATE TABLE [dbo].[jobs] (
+                [id]  INT  NOT NULL,
+                [job] VARCHAR(255) NOT NULL, 
+                CONSTRAINT [PK_jobs] PRIMARY KEY CLUSTERED ([id] ASC),
+                CONSTRAINT [UK_jobs_job] UNIQUE ([job])
+            );
+        END"""
+        self.cursor.execute(query)
+        self.conn.commit()
+        print("..Jobs employees table created!")
+
+
+    def create_hired_employees_table(self):
+        query = """
+            IF NOT EXISTS (
+                SELECT * FROM sys.tables WHERE name = 'hired_employees'
+            )
+            BEGIN
+                CREATE TABLE [dbo].[hired_employees] (
+                    [id]            INT      NOT NULL,
+                    [name]          VARCHAR(255)     NOT NULL,
+                    [datetime]      DATETIME NULL,
+                    [department_id] INT      NOT NULL,
+                    [job_id]        INT      NOT NULL,
+                    CONSTRAINT [PK_Hired_employees] PRIMARY KEY CLUSTERED ([id] ASC),
+                    CONSTRAINT [FK_Departments_hired_employees] FOREIGN KEY ([department_id]) REFERENCES [dbo].[Departments] ([id]),
+                    CONSTRAINT [FK_jobs_hired_employees] FOREIGN KEY ([job_id]) REFERENCES [dbo].[jobs] ([id])
+                );
+            END
+        """
+        self.cursor.execute(query)
+        self.conn.commit()
+        print("..hired employees table created!")
+
+    def close_connection(self):
+        return self._close_connection(self.conn)
+        
+
