@@ -3,6 +3,8 @@ import pypyodbc as odbc
 from fastapi import HTTPException
 from dotenv import load_dotenv
 from app.domain.models.jobs import Jobs
+from app.domain.models.departments import Departments
+from app.domain.models.hired_employees import HiredEmployees
 from typing import List
 
 load_dotenv(".env")
@@ -15,7 +17,7 @@ class AzureConnector(object):
         user = os.getenv('usr')
         pwd = os.getenv('pwd')
         database = os.getenv('database')
-        connection_string =f'Driver={driver};Server={server};Database={database};Uid={user};Pwd={pwd};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+        connection_string =f'Driver={driver};Server={server};Database={database};Uid={user};Pwd={pwd};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=;'
         return connection_string
     
     def _establish_connection(self):
@@ -107,10 +109,10 @@ class SqlManager(AzureConnector):
             BEGIN
                 CREATE TABLE [dbo].[hired_employees] (
                     [id]            INT      NOT NULL,
-                    [name]          VARCHAR(255)     NOT NULL,
+                    [name]          VARCHAR(255)     NULL,
                     [datetime]      DATETIME NULL,
-                    [department_id] INT      NOT NULL,
-                    [job_id]        INT      NOT NULL,
+                    [department_id] INT      NULL,
+                    [job_id]        INT      NULL,
                     CONSTRAINT [PK_Hired_employees] PRIMARY KEY CLUSTERED ([id] ASC),
                     CONSTRAINT [FK_Departments_hired_employees] FOREIGN KEY ([department_id]) REFERENCES [dbo].[Departments] ([id]),
                     CONSTRAINT [FK_jobs_hired_employees] FOREIGN KEY ([job_id]) REFERENCES [dbo].[jobs] ([id])
@@ -128,9 +130,40 @@ class SqlManager(AzureConnector):
         """
         try:
             values = [(job.id, job.job) for job in jobs_objects]
+            print(values)
+            self.cursor.executemany(query, values)
+            self.conn.commit()
+            print('..DB Updated')
+            self.cursor.close()
+        except Exception as e:
+            self.conn.rollback()
+            raise e
+        
+    def _insert_departments_batch(self, departments_objects: List[Departments]):
+        query = """
+            INSERT INTO [dbo].[departments] ([id], [department])
+            VALUES (?, ?);
+        """
+        try:
+            values = [(dept.id, dept.department) for dept in departments_objects]
             self.cursor.executemany(query, values)
             self.conn.commit()
             self.cursor.close()
+        except Exception as e:
+            self.conn.rollback()
+            raise e
+        
+    def _insert_hired_employees_batch(self, hired_employees_objects: List[HiredEmployees]):
+        query = """
+            INSERT INTO [dbo].[hired_employees] ([id], [name], [datetime], [department_id], [job_id])
+            VALUES (?, ?, ?, ?, ?);
+        """
+        try:
+            values = [(emp.id, emp.name, emp.datetime, emp.department_id, emp.job_id) for emp in hired_employees_objects]
+            self.cursor.executemany(query, values)
+            self.conn.commit()
+            self.cursor.close()
+            print('Database Updated')
         except Exception as e:
             self.conn.rollback()
             raise e
