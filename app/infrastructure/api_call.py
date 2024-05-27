@@ -1,22 +1,26 @@
 import requests
 import pandas as pd
+from datetime import datetime
+path = '/home/valentina_ramirez/Documentos/globant/'
 
-data = {
-    'id': [1, 2],
-    'job': ['Software Engineer', 'Data Scientist']
-}
 
-url = 'http://localhost:8000/upload-csv/'
+jobs_csv = path + 'jobs.csv'
+jobs_url = 'http://127.0.0.1:8000/upload-jobs/'
+temp_csv = 'temp.csv'
 
-df = pd.DataFrame(data)
-csv_file = "temp.csv"
-df.to_csv(csv_file, index=False)
-print('df from api.. ok')
-with open(csv_file, 'rb') as f:
-    files = {'file': ('temp.csv', f)}
-# Send a POST request to the endpoint
-response = requests.post(url, files=files)
+departments_csv = path + 'departments.csv'
+departments_url = 'http://127.0.0.1:8000/upload-departments/'
 
-# Print response status code and content
+hired_employees_csv = path + 'hired_employees.csv'
+hired_employees_url = 'http://127.0.0.1:8000/upload-hired-employees/'
+
+format_str = "%Y-%m-%dT%H:%M:%SZ"
+datetime_obj = datetime.strptime('2021-11-07T02:48:42Z', format_str)
+files = {'file': open(hired_employees_csv,'rb')}
+df = pd.read_csv(hired_employees_csv)
+print(df)
+
+response = requests.post(hired_employees_url, files=files)
+
 print('Response Status Code:', response.status_code)
 print('Response Content:', response.text)
