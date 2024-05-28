@@ -33,13 +33,7 @@ def batch_insert_handler(model: Type[BaseModel], insert_method: Callable[[List[B
                 content = await file.read()
                 content_str = content.decode('utf-8').splitlines()
                 csv_reader = csv.reader(content_str)
-                
                 raw_data = [row for row in csv_reader]
-                
-                row_count = len(raw_data)
-                print(model)
-                # if row_count < 1 or row_count > 1000:
-                #     raise HTTPException(status_code=400, detail="Batch size must be between 1 and 1000 rows") 
                 try:
                     objects = []
                     for item in raw_data:
