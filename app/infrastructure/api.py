@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, status
+from fastapi import FastAPI, UploadFile, File, HTTPException, status, Request, HTTPException
 from typing import List, Dict
 import pandas as pd
 from app.domain.models.jobs import Jobs
@@ -8,12 +8,15 @@ import csv
 from typing import Callable, List, Type
 from pydantic import BaseModel
 from datetime import datetime
+from fastapi.responses import JSONResponse
 from app.domain.models.hired_employees import HiredEmployees
 
 app = FastAPI()
-sql_manager = azure_db_connector.SqlManager()
-
-
+try:
+    sql_manager = azure_db_connector.SqlManager()
+except Exception as e:
+    sql_manager = None
+    print(f"Database connection failed: {e}")
 
 def batch_insert_handler(model: Type[BaseModel], insert_method: Callable[[List[BaseModel]], None]):
     """
@@ -57,20 +60,19 @@ def batch_insert_handler(model: Type[BaseModel], insert_method: Callable[[List[B
                         objects.append(obj)
                 except Exception as e:
                     raise HTTPException(status_code=400, detail="Data types do not match")
-                print(f'**********OBJECTS: {objects}')
-                insert_method(objects)
-                
-                return {"message": "Batch data uploaded successfully"}
+                if sql_manager:
+                    insert_method(objects)
+                    return {"message": "Batch data uploaded successfully"}
+                else:
+                    raise HTTPException(status_code=500, detail="Database connection failed")
             except Exception as e:
                 raise HTTPException(status_code=400, detail=f"Error processing file: {e}")
-        
         return wrapper
     return decorator
 
 @app.get("/")
 async def root():
     return {"message": "Welcome to HR Management API :)"}
-
 
 @app.post("/upload-jobs/", status_code=status.HTTP_201_CREATED)
 @batch_insert_handler(Jobs, sql_manager._insert_jobs_batch)
@@ -123,3 +125,14 @@ async def upload_departments(file: UploadFile = File(...)):
         HTTPException: If there is an error processing the file or if the batch size is invalid.
     """
     pass  
+
+async def db_connection_exception_handler(request: Request, exc: Exception):
+    if isinstance(exc, HTTPException) and exc.status_code == 500 and 'Database connection failed' in exc.detail:
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"message": "Temporary server issue. Please try again later."},
+        )
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"message": "An unexpected error occurred."},
+    )
