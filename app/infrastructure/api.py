@@ -13,6 +13,8 @@ from app.domain.models.hired_employees import HiredEmployees
 app = FastAPI()
 sql_manager = azure_db_connector.SqlManager()
 
+
+
 def batch_insert_handler(model: Type[BaseModel], insert_method: Callable[[List[BaseModel]], None]):
     """
     Decorator for handling batch insertion of data into the AzureSQL dabase called (HR) Managment.
@@ -64,6 +66,11 @@ def batch_insert_handler(model: Type[BaseModel], insert_method: Callable[[List[B
         
         return wrapper
     return decorator
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to HR Management API :)"}
+
 
 @app.post("/upload-jobs/", status_code=status.HTTP_201_CREATED)
 @batch_insert_handler(Jobs, sql_manager._insert_jobs_batch)
