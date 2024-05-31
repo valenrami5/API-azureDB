@@ -28,22 +28,69 @@ Table of Contents
 
 ## Usage
 
-**API Endpoints**
-**GET /**
+Endpoints
+Upload Jobs
 
-    Description: Returns a welcome message.
+    Endpoint: /upload-jobs/
+    Method: POST
+    Description: Upload job-related data in bulk from a CSV file.
+    Parameters:
+        file: An UploadFile containing job data in CSV format.
     Response:
-        200 OK: {"message": "Welcome to the FastAPI application"}
+        200 OK: { "message": "Batch data uploaded successfully" }
+    Raises:
+        400 Bad Request: If there is an error processing the file or if the batch size is invalid.
 
-**POST /upload-csv/**
+Upload Departments
 
-    Description: Receives a CSV file, processes it, and stores the data in the Azure SQL pool.
-    Request:
-        Header: Content-Type: multipart/form-data
-        Body: A file field named file containing the CSV file.
+    Endpoint: /upload-departments/
+    Method: POST
+    Description: Upload department-related data in bulk from a CSV file.
+    Parameters:
+        file: An UploadFile containing department data in CSV format.
     Response:
-        200 OK: File uploaded successfully with a preview of the data.
-        400 Bad Request: Error processing file.
+        200 OK: { "message": "Batch data uploaded successfully" }
+    Raises:
+        400 Bad Request: If there is an error processing the file or if the batch size is invalid.
+
+Upload Hired Employees
+
+    Endpoint: /upload-hired-employees/
+    Method: POST
+    Description: Upload hired employees-related data in bulk from a CSV file.
+    Parameters:
+        file: An UploadFile containing hired employees data in CSV format.
+    Response:
+        200 OK: { "message": "Batch data uploaded successfully" }
+    Raises:
+        400 Bad Request: If there is an error processing the file or if the batch size is invalid.
+
+Models
+Jobs
+
+    id: int
+    job: str
+
+Departments
+
+    id: int
+    department: str
+
+Hired Employees
+
+    id: int
+    name: Optional[str]
+    datetime: Optional[datetime]
+    department_id: Optional[int]
+    job_id: Optional[int]
+
+Error Handling
+
+The application raises HTTPException with status code 400 for errors such as:
+
+    Unsupported model type.
+    Data type mismatches.
+    Issues in processing the uploaded file.
 
 ## AzureSynapseSQLPool
 
