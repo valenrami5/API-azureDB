@@ -73,13 +73,13 @@ def batch_insert_handler(model: Type[BaseModel], insert_method: Callable[[List[B
         return wrapper
     return decorator
 
-@app.get("/assesment_1", response_class=HTMLResponse)
+@app.get("/assessment_1", response_class=HTMLResponse)
 async def get_dataframe():
     df = EtlPivotedTable().transform_hired_employees()
     html = df.to_html()
     return HTMLResponse(content=html)
 
-@app.get("/assesment_2", response_class=HTMLResponse)
+@app.get("/assessment_2", response_class=HTMLResponse)
 async def get_dataframe():
     df = MeanEmployeesHired().transform_mean_employees()
     html = df.to_html()

@@ -29,6 +29,21 @@ Table of Contents
 ## Usage
 
 Endpoints
+
+Assessment 1
+
+    Endpoint: /assessment_1
+    Method: GET
+    Description: Get the number of employees hired for each job and department in 2021 divided by quarter. The table is ordered alphabetically by department and job.
+    Response: HTML response containing the number of employees hired for each job and department in 2021 divided by quarter. The table is ordered alphabetically by department and job.
+
+Assessment 2
+
+    Endpoint: /assessment_2
+    Method: GET
+    Description: Get the list of ids, name and number of employees hired of each department that hired more employees than the mean of employees hired in 2021 for all the departments, ordered by the number of employees hired (descending).
+    Response: HTML response containing the mean employees hired by departments.
+
 Upload Jobs
 
     Endpoint: /upload-jobs/
@@ -108,4 +123,55 @@ In summary, the Azure SQL Database offers better support for transactional workl
 
 ## AzureSQL database
 
-An single SQL database in azure was created called HR Management was created
+Database Schema
+The HR Management database is hosted on Azure SQL and comprises three tables: hired_employees, jobs, and departments. The departments table acts as the fact table in this schema. Here is an overview of each table:
+
+Departments Table
+
+    Columns:
+
+        id (INT, Primary Key): Unique identifier for the department.
+        department (VARCHAR, NOT NULL): Name of the department.
+
+Jobs Table
+
+    Columns:
+
+        id (INT, Primary Key): Unique identifier for the job.
+        job (VARCHAR, NOT NULL, Unique): Name of the job.
+
+Hired Employees Table
+
+    Columns:
+
+        id (INT, Primary Key): Unique identifier for the hired employee.
+        name (VARCHAR): Name of the hired employee.
+        datetime (DATETIME): Date and time when the employee was hired.
+        department_id (INT, Foreign Key): References id in the departments table.
+        job_id (INT, Foreign Key): References id in the jobs table.
+
+Database Connection
+
+The database connection is managed by the AzureConnector class and the SqlManager class, which handle establishing and closing connections, as well as executing various database operations. The connection uses credentials and parameters stored in environment variables.
+
+AzureConnector Class
+
+    Methods:
+
+        _get_connection(): Constructs the connection string from environment variables.
+        _establish_connection(): Establishes the connection to the Azure SQL database and returns the connection and cursor.
+        _close_connection(conn): Closes the given database connection.
+        SqlManager Class
+
+    Methods:
+    
+        __init__(): Initializes the connection and cursor.
+        show_tables(): Displays the names of all tables in the database.
+        create_departments_table(): Creates the departments table if it does not exist.
+        create_jobs_table(): Creates the jobs table if it does not exist.
+        create_hired_employees_table(): Creates the hired_employees table if it does not exist.
+        _insert_jobs_batch(jobs_objects): Inserts a batch of job records into the jobs table.
+        _insert_departments_batch(departments_objects): Inserts a batch of department records into the departments table.
+        _insert_hired_employees_batch(hired_employees_objects): Inserts a batch of hired employee records into the hired_employees table.
+        read_table(table_name): Reads all records from the specified table and loads them into a DataFrame.
+        close_connection(): Closes the database connection.
