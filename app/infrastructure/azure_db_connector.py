@@ -14,10 +14,10 @@ class AzureConnector(object):
     def _get_connection(self): 
         driver = os.getenv('driver') 
         server = os.getenv('server')
-        user = os.getenv('usr')
+        user = os.getenv('usr', '{ODBC Driver 17 for SQL Server}')
         pwd = os.getenv('pwd')
         database = os.getenv('database')
-        connection_string =f'Driver={driver};Server={server};Database={database};Uid={user};Pwd={pwd};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=;'
+        connection_string = f'Driver={driver};Server={server};Database={database};Uid={user};Pwd={pwd};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=;'
         return connection_string
     
     def _establish_connection(self):
