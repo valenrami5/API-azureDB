@@ -10,6 +10,9 @@ from pydantic import BaseModel
 from datetime import datetime
 from fastapi.responses import JSONResponse
 from app.domain.models.hired_employees import HiredEmployees
+from app.infrastructure.db_reader import EtlPivotedTable
+from app.infrastructure.db_reader import MeanEmployeesHired
+from fastapi.responses import HTMLResponse
 
 app = FastAPI()
 try:
@@ -69,6 +72,18 @@ def batch_insert_handler(model: Type[BaseModel], insert_method: Callable[[List[B
                 raise HTTPException(status_code=400, detail=f"Error processing file: {e}")
         return wrapper
     return decorator
+
+@app.get("/assesment_1", response_class=HTMLResponse)
+async def get_dataframe():
+    df = EtlPivotedTable().transform_hired_employees()
+    html = df.to_html()
+    return HTMLResponse(content=html)
+
+@app.get("/assesment_2", response_class=HTMLResponse)
+async def get_dataframe():
+    df = MeanEmployeesHired().transform_mean_employees()
+    html = df.to_html()
+    return HTMLResponse(content=html)
 
 @app.get("/")
 async def root():

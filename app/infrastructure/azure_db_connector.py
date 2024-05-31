@@ -1,14 +1,17 @@
 import os
+from typing import List
+
 import pypyodbc as odbc
 from fastapi import HTTPException
 from dotenv import load_dotenv
+import pandas as pd
+
 from app.domain.models.jobs import Jobs
 from app.domain.models.departments import Departments
 from app.domain.models.hired_employees import HiredEmployees
-from typing import List
+
 
 load_dotenv(".env")
-
 class AzureConnector(object):
 
     def _get_connection(self): 
@@ -167,8 +170,16 @@ class SqlManager(AzureConnector):
         except Exception as e:
             self.conn.rollback()
             raise e
+    
+    def read_table(self, table_name: str):
+        query = f" SELECT * FROM {table_name}"
+        try:
+            df = pd.read_sql(query, self.conn)
+            print("Data loaded into DataFrame successfully.")
+        except Exception as e:
+            print("Error loading data into DataFrame:", e)
+        return df
 
     def close_connection(self):
         return self._close_connection(self.conn)
         
-

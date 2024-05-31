@@ -16,10 +16,7 @@ hired_employees_url = 'http://127.0.0.1:8000/upload-hired-employees/'
 
 format_str = "%Y-%m-%dT%H:%M:%SZ"
 datetime_obj = datetime.strptime('2021-11-07T02:48:42Z', format_str)
-files = {'file': open(hired_employees_csv,'rb')}
-df = pd.read_csv(hired_employees_csv)
-print(df)
-
+files = {'file': open(temp_csv,'rb')}
 response = requests.post(hired_employees_url, files=files)
 
 print('Response Status Code:', response.status_code)
