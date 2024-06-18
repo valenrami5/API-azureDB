@@ -1,6 +1,7 @@
 # FastAPI Proyect
 
 This project demonstrates a FastAPI application for uploading CSV files, processing them, and storing the data in an Azure SQL pool within Synapse Analytics.
+
 Table of Contents
 
 - [FastAPI Proyect](#fastapi-proyect)
